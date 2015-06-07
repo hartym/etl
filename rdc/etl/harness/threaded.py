@@ -58,6 +58,7 @@ class TransformThread(threading.Thread):
                 'exception': exc,
                 'traceback': tb,
                 }, STDERR, ))
+            print str(exc) + '\n\n' + tb + '\n\n\n\n'
         else:
             print str(exc) + '\n\n' + tb + '\n\n\n\n'
 

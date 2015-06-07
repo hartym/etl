@@ -118,7 +118,11 @@ class Transform(ITransform, Statisticable):
             # Pull data from the first available input channel (blocking)
             data, channel = self._input.get(timeout=1)
             # Execute actual transformation
-            self.__execute_and_handle_output(self.transform, data, channel)
+            try:
+                self.__execute_and_handle_output(self.transform, data, channel)
+            except Exception as e:
+                e.input_data, e.input_channel = data, channel
+                raise
         finally:
             if finalize and not self._finalized:
                 self._finalized = True
