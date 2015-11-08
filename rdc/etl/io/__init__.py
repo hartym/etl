@@ -17,16 +17,17 @@
 import time
 from abc import ABCMeta, abstractmethod
 from copy import copy
-from Queue import Queue, Empty
 import itertools
 import datetime
+
+from six.moves.queue import Queue, Empty
+
 from rdc.etl import TICK
 from rdc.etl.error import AbstractError, InactiveReadableError, InactiveWritableError
 from rdc.etl.hash import Hash
-
-# Input channels
 from rdc.etl.stat import Statisticable
 
+# Input channels
 STDIN = 0
 STDIN2 = 1
 STDIN3 = 2
@@ -87,10 +88,8 @@ End = Token('End')
 BUFFER_SIZE = 8192
 
 
-class IReadable:
+class IReadable(metaclass=ABCMeta):
     """Interface for things you can read from."""
-
-    __metaclass__ = ABCMeta
 
     @abstractmethod
     def get(self, block=True, timeout=None):
@@ -98,10 +97,8 @@ class IReadable:
         raise AbstractError(self.get)
 
 
-class IWritable:
+class IWritable(metaclass=ABCMeta):
     """Interface for things you can write to."""
-
-    __metaclass__ = ABCMeta
 
     @abstractmethod
     def put(self, data, block=True, timeout=None):
@@ -119,7 +116,7 @@ class InputMultiplexer(IReadable, Statisticable):
         self._special_stats = dict()
 
     def get_stats(self, debug=False, profile=False):
-        stats = itertools.chain(self._stats.iteritems(), self._special_stats.iteritems())
+        stats = itertools.chain(iter(self._stats.items()), iter(self._special_stats.items()))
         return ((CHANNEL_NAMES[INPUT_TYPE][channel], stat) for channel, stat in stats)
 
     def get(self, block=True, timeout=None):
@@ -128,7 +125,7 @@ class InputMultiplexer(IReadable, Statisticable):
         # todo documentation says .empty() value is not reliable ... XXX
         started_at = datetime.datetime.now()
         while self.alive:
-            for id, queue in self.queues.items():
+            for id, queue in list(self.queues.items()):
                 if queue.alive and not queue.empty():
                     # xxx useage of block/timeout here is wrong
                     data = queue.get(block, timeout)
@@ -158,18 +155,18 @@ class InputMultiplexer(IReadable, Statisticable):
 
     @property
     def alive(self):
-        for channel, queue in self.queues.items():
+        for channel, queue in list(self.queues.items()):
             if queue.alive:
                 return True
         return False
 
     @property
     def plugged(self):
-        return [queue for channel, queue in self.queues.items() if channel in self._plugged]
+        return [queue for channel, queue in list(self.queues.items()) if channel in self._plugged]
 
     @property
     def unplugged(self):
-        return [queue for channel, queue in self.queues.items() if channel not in self._plugged]
+        return [queue for channel, queue in list(self.queues.items()) if channel not in self._plugged]
 
 
 class OutputDemultiplexer(IWritable, Statisticable):
@@ -181,7 +178,7 @@ class OutputDemultiplexer(IWritable, Statisticable):
         self._special_stats = dict()
 
     def get_stats(self, debug=False, profile=False):
-        stats = itertools.chain(self._stats.iteritems(), self._special_stats.iteritems())
+        stats = itertools.chain(iter(self._stats.items()), iter(self._special_stats.items()))
         return ((CHANNEL_NAMES[OUTPUT_TYPE][channel], stat) for channel, stat in stats)
 
     def put(self, data, block=True, timeout=None):

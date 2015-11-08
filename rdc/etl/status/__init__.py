@@ -18,9 +18,7 @@ from abc import ABCMeta, abstractmethod
 from rdc.etl.error import AbstractError
 
 
-class IStatus:
-    __metaclass__ = ABCMeta
-
+class IStatus(metaclass=ABCMeta):
     @abstractmethod
     def initialize(self, harness, debug, profile):
         """Initialize status."""

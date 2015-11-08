@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import
+
 from copy import copy
 from inspect import isgenerator
 from rdc.etl.error import AbstractError
@@ -79,7 +79,7 @@ class XmlMap(Map):
                     try:
                         mapped.update(value_for_item)
                         yield mapped
-                    except TypeError, e:
+                    except TypeError as e:
                         raise TypeError('{name}.map_item(...) must be iterable.'.format(
                             name=type(self).__name__
                         ))

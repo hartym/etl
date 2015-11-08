@@ -37,5 +37,5 @@ if __name__ == '__main__':
 
     files = [FileProxy(url) for url in urls]
     for file in files:
-        print file.stat()
+        print(file.stat())
 

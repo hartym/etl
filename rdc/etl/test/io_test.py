@@ -15,7 +15,7 @@
 # limitations under the License.
 
 import unittest
-from Queue import Empty
+from queue import Empty
 from rdc.etl.io import Input, InactiveWritableError, Begin, End, InactiveReadableError, InputMultiplexer
 
 

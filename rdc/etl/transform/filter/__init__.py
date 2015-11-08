@@ -17,6 +17,7 @@
 from rdc.etl.error import AbstractError
 from rdc.etl.io import STDIN
 from rdc.etl.transform import Transform
+import collections
 
 
 class Filter(Transform):
@@ -56,7 +57,7 @@ class Filter(Transform):
         raise AbstractError(self.filter)
 
     def transform(self, hash, channel=STDIN):
-        if not self.filter or not callable(self.filter):
+        if not self.filter or not isinstance(self.filter, collections.Callable):
             raise RuntimeError('No callable provided to ' + self.__class__.__name__ + '.')
 
         if self.filter(hash, channel):

@@ -1,11 +1,12 @@
-rdc.common==0.1.0
-lxml               # XML Processing
-BeautifulSoup
-requests           # HTTP without headaches
+rdc.common >=0.1,<0.2
+cached-property >=1.2,<1.3
+lxml >=3.4,<3.5
+requests >=2.8,<3.0
+six >=1.10,<2.0
+
 unidecode          # Transcoding
-webob              # Webapp2 dependency
-webapp2            # Basic web tools
 sqlalchemy         # DBAL
 blessings          # Readable console & tty detection
 psutil             # memory consumption
 repoze.lru         # lru_cache for python 2.6+
+

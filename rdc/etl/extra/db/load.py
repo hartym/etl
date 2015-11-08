@@ -48,7 +48,7 @@ class DatabaseLoad(Transform):
 
         # XXX should take self.fetch_columns into account if provided
         self.fetch_columns = {}
-        if isinstance(fetch_columns, (list, tuple, )):
+        if isinstance(fetch_columns, (list, tuple )):
             self.add_fetch_column(*fetch_columns)
         elif isinstance(fetch_columns, dict):
             self.add_fetch_column(**fetch_columns)
@@ -140,7 +140,7 @@ class DatabaseLoad(Transform):
         row = self.find(hash)
 
         now = self.now
-        column_names = self.table.columns.keys()
+        column_names = list(self.table.columns.keys())
         # UpdatedAt field configured ? Let's set the value in source hash
         if self.updated_at_field in column_names:
             hash[self.updated_at_field] = now
@@ -205,7 +205,7 @@ class DatabaseLoad(Transform):
             if not row:
                 raise ValueError('Could not find matching row after load.')
 
-            for alias, column in self.fetch_columns.iteritems():
+            for alias, column in self.fetch_columns.items():
                 hash[alias] = row[column]
 
         return hash
@@ -245,7 +245,7 @@ class DatabaseLoad(Transform):
 
     @cached_property
     def columns(self):
-        return self.table.columns.keys()
+        return list(self.table.columns.keys())
 
     @cached_property
     def metadata(self):

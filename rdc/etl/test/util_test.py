@@ -21,8 +21,8 @@ from rdc.etl.util import slughifi
 class UtilSlughifiTestCase(unittest.TestCase):
     def test_basic(self):
         self.assertEqual(slughifi('Test without unicode'), 'test-without-unicode')
-        self.assertEqual(slughifi(u'Du français éèù!'), 'du-francais-eeu-')
-        self.assertEqual(slughifi(u'Du français éèù!', strip=True), 'du-francais-eeu')
+        self.assertEqual(slughifi('Du français éèù!'), 'du-francais-eeu-')
+        self.assertEqual(slughifi('Du français éèù!', strip=True), 'du-francais-eeu')
 
 
 if __name__ == '__main__':

@@ -13,17 +13,18 @@
 # without warranties or conditions of any kind, either express or implied.
 # see the license for the specific language governing permissions and
 # limitations under the license.
-from Queue import Empty
 
 import datetime
 import threading
 import time
 import traceback
+
+from six.moves.queue import Empty
+
 from rdc.etl import TICK, STATUS_PERIOD
 from rdc.etl.harness.base import BaseHarness
 from rdc.etl.hash import Hash
-from rdc.etl.io import InactiveReadableError, IO_TYPES, DEFAULT_INPUT_CHANNEL, DEFAULT_OUTPUT_CHANNEL, Begin, End, \
-    STDERR
+from rdc.etl.io import InactiveReadableError, IO_TYPES, DEFAULT_INPUT_CHANNEL, DEFAULT_OUTPUT_CHANNEL, Begin, End, STDERR
 from rdc.etl.transform import Transform
 
 class _IntSequenceGenerator(object):
@@ -35,7 +36,7 @@ class _IntSequenceGenerator(object):
     def get(self):
         return self.current
 
-    def next(self):
+    def __next__(self):
         self.current += 1
         return self.current
 
@@ -45,11 +46,11 @@ class TransformThread(threading.Thread):
 
     __thread_counter = _IntSequenceGenerator()
 
-    def __init__(self, transform, group=None, target=None, name=None, args=(), kwargs=None, verbose=None):
-        super(TransformThread, self).__init__(group, target, name, args, kwargs, verbose)
+    def __init__(self, transform, group=None, target=None, name=None, args=(), kwargs=None, *, daemon=None):
+        super().__init__(group, target, name, args, kwargs, daemon=daemon)
         self.transform = transform
-        self.__thread_number = self.__class__.__thread_counter.next()
-        self._stop = threading.Event()
+        self.__thread_number = next(self.__class__.__thread_counter)
+        self._stop_event = threading.Event()
 
     def handle_error(self, exc, tb):
         if STDERR in self.transform.OUTPUT_CHANNELS:
@@ -58,9 +59,9 @@ class TransformThread(threading.Thread):
                 'exception': exc,
                 'traceback': tb,
                 }, STDERR, ))
-            print str(exc) + '\n\n' + tb + '\n\n\n\n'
+            print((str(exc) + '\n\n' + tb + '\n\n\n\n'))
         else:
-            print str(exc) + '\n\n' + tb + '\n\n\n\n'
+            print((str(exc) + '\n\n' + tb + '\n\n\n\n'))
 
     @property
     def name(self):
@@ -85,18 +86,18 @@ class TransformThread(threading.Thread):
         except (Empty, InactiveReadableError) as e:
             # Obviously, ignore.
             pass
-        except Exception, e:
+        except Exception as e:
             self.handle_error(e, traceback.format_exc())
 
     def stop(self):
-        self._stop.set()
+        self._stop_event.set()
         time.sleep(2)
         # xxx I do not want to do this. But really, what are my options ?
         self._Thread__stop()
 
     @property
     def stopped(self):
-        return self._stop.isSet()
+        return self._stop_event.isSet()
 
     def __repr__(self):
         """Adds "alive" information to the transform representation."""
@@ -126,18 +127,18 @@ class ThreadedHarness(BaseHarness):
 
     def get_threads(self):
         """Returns attached threads."""
-        return self._threads.items()
+        return list(self._threads.items())
 
     def get_transforms(self):
         """Returns attached transorms."""
-        return self._transforms.items()
+        return list(self._transforms.items())
 
     def add(self, transform):
         """Register a transformation, create a thread object to manage its future lifecycle."""
         t_ident = id(transform)
 
         if not t_ident in self._transform_indexes:
-            id_ = self._current_id.next()
+            id_ = next(self._current_id)
             self._transforms[id_] = transform
             self._transform_indexes[t_ident] = id_
             self._threads[id_] = TransformThread(transform)
@@ -146,7 +147,7 @@ class ThreadedHarness(BaseHarness):
 
     def validate(self):
         """Validation of transform graph validity."""
-        for id, transform in self._transforms.items():
+        for id, transform in list(self._transforms.items()):
             # Adds a special single empty hash queue to unplugged inputs
             for queue in transform._input.unplugged:
                 queue.put(Begin)
@@ -160,7 +161,7 @@ class ThreadedHarness(BaseHarness):
         # todo healthcheck ? (cycles ... dead ends ... orphans ...)
 
         # start all threads
-        for id, thread in self._threads.items():
+        for id, thread in list(self._threads.items()):
             thread.start()
 
         # run initialization methods for statuses
@@ -173,7 +174,7 @@ class ThreadedHarness(BaseHarness):
         while True:
             try:
                 is_alive = False
-                for id, thread in self._threads.items():
+                for id, thread in list(self._threads.items()):
                     is_alive = is_alive or thread.is_alive()
 
                 # communicate with the world
@@ -193,7 +194,7 @@ class ThreadedHarness(BaseHarness):
                 time.sleep(TICK)
             except KeyboardInterrupt as e:
                 interrupted = True
-                for id, thread in self._threads.items():
+                for id, thread in list(self._threads.items()):
                     if thread.is_alive():
                         thread.stop()
                 break
@@ -202,10 +203,10 @@ class ThreadedHarness(BaseHarness):
         for status in self.status:
             status.finalize(self, debug=self.debug, profile=self.profile)
         if interrupted:
-            print 'Caught keyboard interrupt (Ctrl-C), stopping threads ...'
+            print('Caught keyboard interrupt (Ctrl-C), stopping threads ...')
 
         # Wait for all transform threads to die
-        for id, thread in self._threads.items():
+        for id, thread in list(self._threads.items()):
             thread.join()
 
     def add_chain(self, *transforms, **kwargs):

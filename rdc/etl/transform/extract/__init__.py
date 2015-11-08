@@ -23,6 +23,7 @@ As it will yield all data for each input row, the input given is usually only on
 from rdc.etl.error import AbstractError
 from rdc.etl.io import STDIN
 from rdc.etl.transform import Transform
+import collections
 
 class Extract(Transform):
     """Base class for extract transforms.
@@ -94,7 +95,7 @@ class Extract(Transform):
         raise AbstractError(self.extract)
 
     def transform(self, hash, channel=STDIN):
-        extracted_data = self.extract() if callable(self.extract) else self.extract
+        extracted_data = self.extract() if isinstance(self.extract, collections.Callable) else self.extract
 
         if extracted_data:
             for line in extracted_data:

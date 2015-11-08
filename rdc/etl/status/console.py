@@ -51,8 +51,8 @@ class ConsoleStatus(BaseStatus):
         threads = harness.get_threads()
         if profile:
             append = (
-                (u'Memory', '{0:.2f} Mb'.format(memory_usage())),
-                (u'Total time', '{0} s'.format(execution_time(harness))),
+                ('Memory', '{0:.2f} Mb'.format(memory_usage())),
+                ('Total time', '{0} s'.format(execution_time(harness))),
             )
         else:
             append = ()
@@ -76,15 +76,15 @@ class ConsoleStatus(BaseStatus):
             else:
                 _line = t.black(''.join(
                     ('({})'.format(id), ' - ', thread.name, ' ', thread.transform.get_unicode_stats(debug=debug, profile=profile), ' ', )))
-            print prefix + _line + t.clear_eol
+            print(prefix + _line + t.clear_eol)
 
         if append:
             # todo handle multiline
-            print ' `->', ' '.join(u'{0}: {1}'.format(t.bold(t.white(k)), v) for k, v in append), t.clear_eol
+            print(' `->', ' '.join('{0}: {1}'.format(t.bold(t.white(k)), v) for k, v in append), t.clear_eol)
             t_cnt += 1
 
         if rewind:
-            print t.clear_eol
-            print t.move_up * (t_cnt + 2)
+            print(t.clear_eol)
+            print(t.move_up * (t_cnt + 2))
 
 

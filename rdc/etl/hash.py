@@ -19,9 +19,9 @@ from collections import OrderedDict
 from copy import copy
 
 try:
-    from thread import get_ident as _get_ident
+    from six.moves._thread import get_ident as _get_ident
 except ImportError:
-    from dummy_thread import get_ident as _get_ident
+    from six.moves._dummy_thread import get_ident as _get_ident
 
 class Hash(OrderedDict):
     """
@@ -32,7 +32,7 @@ class Hash(OrderedDict):
     def copy(self, datadict=None):
         o = copy(self)
         if datadict is not None:
-            for k, v in datadict.items():
+            for k, v in list(datadict.items()):
                 o[k] = v
         return o
 
@@ -40,7 +40,7 @@ class Hash(OrderedDict):
         """
         todo: simplify this as it does two things
         """
-        keys = self.keys()
+        keys = list(self.keys())
         for k in keys:
             if tester and not tester(k):
                 del self[k]
@@ -84,7 +84,7 @@ class Hash(OrderedDict):
         try:
             if not self:
                 return 'H{}' % ()
-            return 'H{%s}' % (', '.join(['%r: %r' % (k, v, ) for k, v in self.iteritems()]), )
+            return 'H{%s}' % (', '.join(['%r: %r' % (k, v, ) for k, v in self.items()]), )
         finally:
             del _repr_running[call_key]
 

@@ -26,7 +26,7 @@ class HttpHandler(RequestHandler):
         return self.app.config.get('harness')
 
     def get(self):
-        threads = self.harness._threads.items()
+        threads = list(self.harness._threads.items())
 
         self.response.write('''<!DOCTYPE html>
 <!--[if IE 9]><html class="lt-ie10" lang="en" > <![endif]-->

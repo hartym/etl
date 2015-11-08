@@ -111,7 +111,7 @@ class HashTestCase(unittest.TestCase):
 
     def test_get_values(self):
         h = Hash({'foo': 'bar', 'bar': 'baz', 'baz': 'boo', })
-        self.assertEquals(h.get_values(('baz', 'foo', 'bar', )), ['boo', 'bar', 'baz', ])
+        self.assertEqual(h.get_values(('baz', 'foo', 'bar', )), ['boo', 'bar', 'baz', ])
 
 if __name__ == '__main__':
     unittest.main()

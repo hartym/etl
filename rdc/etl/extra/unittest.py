@@ -14,18 +14,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import
+
 from unittest import TestCase
 from rdc.etl.hash import Hash
 from rdc.etl.transform.util import clean
 
 class BaseTestCase(TestCase):
     def assertStreamEqual(self, first, second, msg=None):
-        first = map(clean, first)
-        second = map(clean, second)
+        first = list(map(clean, first))
+        second = list(map(clean, second))
         self.assertEqual(len(first), len(second), msg)
-        for i in xrange(0, len(first)):
+        for i in range(0, len(first)):
             left = first[i]
             right = second[i]
-            self.assertEqual(left.items(), right.items(), msg)
+            self.assertEqual(list(left.items()), list(right.items()), msg)
 

@@ -34,10 +34,10 @@ def build_simple_transform(f='upper'):
     return t
 
 def run(harness):
-    print
+    print()
     retval = harness()
-    print ' `-> {0}: {1}'.format(t.bold(t.white('Return')), retval)
-    print
+    print(' `-> {0}: {1}'.format(t.bold(t.white('Return')), retval))
+    print()
 
 __all__ = [build_producer, build_simple_transform, run, Harness, ]
 

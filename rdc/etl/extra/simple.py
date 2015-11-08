@@ -17,6 +17,7 @@
 from rdc.etl.io import STDIN
 from rdc.etl.transform import Transform
 from rdc.etl.util import filter_html
+import collections
 
 
 def _apply_filter(value, hash, filter):
@@ -26,10 +27,10 @@ def _apply_filter(value, hash, filter):
 
     # multi filter (gets the hash along with value
     elif hasattr(filter, '_is_multi') and filter._is_multi:
-        return filter(value, hash)
+        return list(filter(value, hash))
 
     # simple standard filter, just a callable that transforms a value
-    return filter(value)
+    return list(filter(value))
 
 
 class _SimpleItemTransformationDescriptor(object):
@@ -88,7 +89,7 @@ class _SimpleItemTransformationDescriptor(object):
         # default conditions
         if cond is None:
             cond = lambda v: v and len(v)
-        elif not callable(cond):
+        elif not isinstance(cond, collections.Callable):
             cond = lambda v: cond
 
         def _filter(v, h, fields=fields, cond=cond, postfix=postfix, separator=separator):
@@ -107,7 +108,7 @@ class _SimpleItemTransformationDescriptor(object):
         # default conditions
         if cond is None:
             cond = lambda v: v and len(v)
-        elif not callable(cond):
+        elif not isinstance(cond, collections.Callable):
             cond = lambda v: cond
 
         def _filter(v, h, fields=fields, cond=cond, prefix=prefix, separator=separator):
@@ -129,21 +130,21 @@ class _SimpleItemTransformationDescriptor(object):
             def getter(o):
                 try:
                     return o[_name]
-                except KeyError, e:
+                except KeyError as e:
                     return None
 
-            getter.func_name = 'get_' + str(_name)
+            getter.__name__ = 'get_' + str(_name)
 
-        elif isinstance(self.getter, unicode):
+        elif isinstance(self.getter, str):
             _name = self.getter.encode('utf-8')
 
             def getter(o):
                 try:
                     return o[_name]
-                except KeyError, e:
+                except KeyError as e:
                     return None
 
-            getter.func_name = 'get_' + str(_name)
+            getter.__name__ = 'get_' + str(_name)
 
         else:
             getter = self.getter
@@ -206,13 +207,13 @@ class SimpleTransform(Transform):
         self._filters = list(filters)
 
     def transform(self, hash, channel=STDIN):
-        for name, value_getter in self.__dict__.items():
+        for name, value_getter in list(self.__dict__.items()):
             if name[0] == '_' or name in ('INPUT_CHANNELS', 'OUTPUT_CHANNELS', 'transform' ):
                 continue
 
             try:
                 conditions = list(value_getter.conditions)
-            except Exception, e:
+            except Exception as e:
                 conditions = []
 
             can_update = True
@@ -222,13 +223,13 @@ class SimpleTransform(Transform):
                     break
 
             if can_update:
-                if callable(value_getter):
+                if isinstance(value_getter, collections.Callable):
                     hash[name] = value_getter(hash)
                 else:
                     hash[name] = value_getter
 
         for filter in self._filters:
-            hash = filter(hash)
+            hash = list(filter(hash))
 
         return hash
 

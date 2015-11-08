@@ -17,15 +17,13 @@
 from abc import ABCMeta, abstractmethod
 from rdc.etl.error import AbstractError
 
-class IHarness:
+class IHarness(metaclass=ABCMeta):
     """
     ETL harness interface.
 
     The harness is basically the executable stuff that will actually run a job.
 
     """
-
-    __metaclass__ = ABCMeta
 
     @abstractmethod
     def __call__(self):

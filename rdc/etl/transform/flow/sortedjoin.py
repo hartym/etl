@@ -18,6 +18,7 @@ from functools import partial
 from rdc.etl.io import STDIN, STDIN2
 from rdc.etl.transform import Transform
 from rdc.etl.transform.flow import default_comparator, get_lower, insert_sorted, default_merger
+from functools import reduce
 
 class SortedJoin(Transform):
     INPUT_CHANNELS = (STDIN, STDIN2, )

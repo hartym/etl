@@ -15,14 +15,14 @@
 # limitations under the License.
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
+
 import csv
 from rdc.etl.io import STDIN
 from rdc.etl.transform.map import Map
 try:
-    import cStringIO as StringIO
+    import io as StringIO
 except:
-    import StringIO
+    import io
 
 
 class CsvMap(Map):
@@ -65,14 +65,14 @@ class CsvMap(Map):
         return bool(self.headers)
 
     def transform(self, hash, channel=STDIN):
-        s_in = StringIO.StringIO(hash.get(self.field))
+        s_in = io.StringIO(hash.get(self.field))
         reader = csv.reader(s_in, delimiter=self.delimiter, quotechar=self.quotechar)
-        headers = self.has_headers and self.headers or reader.next()
+        headers = self.has_headers and self.headers or next(reader)
         field_count = len(headers)
 
         if self.skip and self.skip > 0:
             for i in range(0, self.skip):
-                reader.next()
+                next(reader)
 
         for row in reader:
             if len(row) != field_count:

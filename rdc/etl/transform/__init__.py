@@ -17,6 +17,7 @@
 import itertools
 import types
 from abc import ABCMeta, abstractmethod
+
 from rdc.etl import H
 from rdc.etl.error import AbstractError
 from rdc.etl.hash import Hash
@@ -25,9 +26,7 @@ from rdc.etl.stat import Statisticable
 from rdc.etl.util import Timer
 
 
-class ITransform:
-    __metaclass__ = ABCMeta
-
+class ITransform(metaclass=ABCMeta):
     @abstractmethod
     def transform(self, hash, channel=STDIN):
         """All input rows that comes to one of this transform's input channels will be passed to this method. If you
@@ -161,10 +160,10 @@ class Transform(ITransform, Statisticable):
     def get_local_stats(self, debug=False, profile=False):
         if profile:
             return (
-                (u'τ', '%.2fs' % (self._exec_time, ), ),
-                (u'ε', self._exec_count, ),
-                (u'τ.ε⁻¹', ((self._exec_count > 0) and (u'%.1fms' % (1000 * self._exec_time / self._exec_count, )) or u'∞'), ),
-                (u'ε.τ⁻¹', ((self._exec_time > 0) and (u'%.1f/s' % (self._exec_count / self._exec_time, )) or u'∞'), ),
+                ('τ', '%.2fs' % (self._exec_time, ), ),
+                ('ε', self._exec_count, ),
+                ('τ.ε⁻¹', ((self._exec_count > 0) and ('%.1fms' % (1000 * self._exec_time / self._exec_count, )) or '∞'), ),
+                ('ε.τ⁻¹', ((self._exec_time > 0) and ('%.1f/s' % (self._exec_count / self._exec_time, )) or '∞'), ),
             )
         return ()
 
@@ -180,7 +179,7 @@ class Transform(ITransform, Statisticable):
 
 
     def __repr__(self):
-        return u'<{0} {1}>'.format(self.__name__, self.get_unicode_stats())
+        return '<{0} {1}>'.format(self.__name__, self.get_unicode_stats())
 
     # Private
     def __execute_and_handle_output(self, callable, *args, **kwargs):
@@ -198,7 +197,7 @@ class Transform(ITransform, Statisticable):
                 timer = Timer()
                 with timer:
                     try:
-                        result = results.next()
+                        result = next(results)
                     except StopIteration as e:
                         break
                 self._exec_time += timer.duration

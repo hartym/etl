@@ -20,6 +20,7 @@ import itertools
 from rdc.etl.error import AbstractError
 from rdc.etl.io import STDIN
 from rdc.etl.transform.join import Join
+import collections
 
 
 class DatabaseJoin(Join):
@@ -114,9 +115,9 @@ class DatabaseJoinOrCreate(Join):
         super(DatabaseJoinOrCreate, self).__init__()
         self.engine = engine
         self.table_name = table_name or self.table_name
-        self.identity = callable(identity) and identity or self.identity
-        self.params = callable(params) and params or self.params
-        self.output = callable(output) and output or self.output
+        self.identity = isinstance(identity, collections.Callable) and identity or self.identity
+        self.params = isinstance(params, collections.Callable) and params or self.params
+        self.output = isinstance(output, collections.Callable) and output or self.output
 
         self._result_cache = {}
 
@@ -146,7 +147,7 @@ class DatabaseJoinOrCreate(Join):
             LIMIT 1
         '''.strip().format(
             table_name = self.table_name,
-            where = ' AND '.join(('t.{field} = %s'.format(field=field) for field, value in identity.items()))
+            where = ' AND '.join(('t.{field} = %s'.format(field=field) for field, value in list(identity.items())))
         )
 
     def get_create_sql(self, params):
@@ -161,7 +162,7 @@ class DatabaseJoinOrCreate(Join):
             ({fields}) VALUES ({values})
         '''.strip().format(
             table_name = self.table_name,
-            fields = ', '.join((field for field in params.keys())),
+            fields = ', '.join((field for field in list(params.keys()))),
             values = ', '.join(['%s'] * len(params)),
             )
 
@@ -173,7 +174,7 @@ class DatabaseJoinOrCreate(Join):
         """
         return self.engine.execute(
             self.get_find_sql(identity),
-            *identity.values()
+            *list(identity.values())
         ).fetchone()
 
     def create(self, identity, params):
@@ -183,10 +184,10 @@ class DatabaseJoinOrCreate(Join):
         :param params:
         :return:
         """
-        params = OrderedDict(itertools.chain(params.iteritems(), identity.iteritems()))
+        params = OrderedDict(itertools.chain(iter(params.items()), iter(identity.items())))
         self.engine.execute(
             self.get_create_sql(params),
-            *params.values()
+            *list(params.values())
         )
         return self.find(identity)
 

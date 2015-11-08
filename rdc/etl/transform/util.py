@@ -21,13 +21,14 @@ from rdc.etl.hash import Hash
 from rdc.etl.io import STDIN, STDOUT, STDIN2, STDOUT2
 from rdc.etl.transform import Transform
 from rdc.etl.util import terminal as t
+import collections
 
 def shade(v):
     return t.black(t.bold(v))
 
 def _repr(v):
     try:
-        return unicode(v)
+        return str(v)
     except:
         try:
             return v.decode('utf-8')
@@ -65,8 +66,8 @@ class Log(Transform):
         # pretty format Hashes
         if isinstance(s, Hash):
             _s, s = s, []
-            for k in _s.keys():
-                s.append(u'  {k}{t.black}:{t.bold}{tp}{t.normal} {t.black}{t.bold}→{t.normal} {t.black}«{t.normal}{v}{t.black}»{t.normal}{t.clear_eol}'.format(k=_repr(k), v=_repr(_s[k]), t=t, tp=type(_s[k]).__name__))
+            for k in list(_s.keys()):
+                s.append('  {k}{t.black}:{t.bold}{tp}{t.normal} {t.black}{t.bold}→{t.normal} {t.black}«{t.normal}{v}{t.black}»{t.normal}{t.clear_eol}'.format(k=_repr(k), v=_repr(_s[k]), t=t, tp=type(_s[k]).__name__))
         else:
             # unpack
             s = s.split('\n')
@@ -83,10 +84,10 @@ class Log(Transform):
         width = t.width or 80
 
         if label:
-            label = unicode(label)
-            sys.stderr.write(t.black(u'·' * 4) + shade('{') + label + shade('}') + t.black(u'·' * (width - (6+len(label)) - 1)) + '\n')
+            label = str(label)
+            sys.stderr.write(t.black('·' * 4) + shade('{') + label + shade('}') + t.black('·' * (width - (6+len(label)) - 1)) + '\n')
         else:
-            sys.stderr.write(t.black(u'·' * (width-1) + '\n'))
+            sys.stderr.write(t.black('·' * (width-1) + '\n'))
 
 
     def writeln(self, s):
@@ -101,7 +102,7 @@ class Log(Transform):
         self.lineno += 1
         if not self.condition or self.condition(hash):
             hash = hash.copy()
-            hash = hash if not callable(self.field_filter) else hash.restrict(self.field_filter)
+            hash = hash if not isinstance(self.field_filter, collections.Callable) else hash.restrict(self.field_filter)
             if self.clean:
                 hash = hash.restrict(lambda k: len(k) and k[0] != '_')
             self.writehr(self.lineno)

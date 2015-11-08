@@ -17,9 +17,7 @@
 from abc import ABCMeta, abstractmethod
 from rdc.etl.error import AbstractError
 
-class IStatisticable:
-    __metaclass__ = ABCMeta
-
+class IStatisticable(metaclass=ABCMeta):
     @abstractmethod
     def get_stats(self, debug=False, profile=False):
         raise AbstractError(self.get_stats)
@@ -31,8 +29,8 @@ class IStatisticable:
 
 class Statisticable(IStatisticable):
     def get_unicode_stats(self, debug=False, profile=False):
-        return u' '.join(
-            (u'{0}={1}'.format(name, cnt) for name, cnt in self.get_stats(debug=debug, profile=profile) if cnt > 0)
+        return ' '.join(
+            ('{0}={1}'.format(name, cnt) for name, cnt in self.get_stats(debug=debug, profile=profile) if cnt > 0)
         )
 
     # XXX BC remove this ASAP
