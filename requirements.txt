@@ -1,6 +1,6 @@
 rdc.common >=0.1,<0.2
 cached-property >=1.2,<1.3
-lxml >=3.4,<3.5
+lxml >=3.6,<4.0
 requests >=2.8,<3.0
 six >=1.10,<2.0
 
